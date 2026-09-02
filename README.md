@@ -1,28 +1,229 @@
-# CGPA Generation System – Java
+# 🎓 UGV CGPA Generation System – Java
 
-A simple **CGPA Generation System** developed using Java and Object-Oriented Programming (OOP) concepts.
+A **GUI-based CGPA Generation System** developed using **Java Swing** and **Object-Oriented Programming (OOP)** concepts.
+
+This project is designed according to the **University of Global Village (UGV)** grading system and supports both **numeric marks** and **letter grades**.
+
+---
 
 ## 📌 Project Overview
 
-This project is designed to calculate a student's **Grade Point Average (GPA)** and **Cumulative Grade Point Average (CGPA)** based on course grades and credit hours.
+The **UGV CGPA Generation System** allows users to enter student information, add multiple courses, provide course credits and grades, and automatically calculate the student's CGPA.
 
-The project was developed as part of the **Object-Oriented Programming (OOP)** course.
+The application provides a graphical user interface using **Java Swing**, making the system simple and user-friendly.
+
+---
 
 ## ✨ Features
 
-* Calculate GPA based on course grades and credit hours
-* Calculate overall CGPA
-* Accept multiple courses
-* Grade-to-grade-point conversion
-* Credit-hour based calculation
-* Console-based user interface
-* Built using Java
+* 👨‍🎓 Enter student name and student ID
+* 📚 Add multiple courses
+* 💳 Enter course credit hours
+* 🔢 Enter numeric marks (0–100)
+* 🔤 Select letter grades manually
+* 🔄 Automatically convert marks into UGV letter grades
+* 📊 Display courses in a table
+* 🧮 Calculate credit-weighted CGPA
+* 📋 Display total courses and total credits
+* ⚠️ Input validation and error handling
+* 🧹 Clear all entered information
+* 🖥️ User-friendly Java Swing GUI
 
-## 🛠️ Technologies Used
+---
 
-* **Java**
-* **Object-Oriented Programming (OOP)**
-* **Git & GitHub**
+## 🎯 UGV Grading System
+
+The application follows the following grading scale:
+
+|    Marks | Letter Grade | Grade Point |
+| -------: | :----------: | ----------: |
+|   80–100 |      A+      |        4.00 |
+|    75–79 |       A      |        3.75 |
+|    70–74 |      A-      |        3.50 |
+|    65–69 |      B+      |        3.25 |
+|    60–64 |       B      |        3.00 |
+|    55–59 |      B-      |        2.75 |
+|    50–54 |      C+      |        2.50 |
+|    45–49 |       C      |        2.25 |
+|    40–44 |       D      |        2.00 |
+| Below 40 |       F      |        0.00 |
+
+---
+
+## 🧮 CGPA Calculation
+
+The system calculates CGPA using a credit-weighted average:
+
+```text
+CGPA = Σ(Credit × Grade Point) / Σ(Credit)
+```
+
+For each course:
+
+```text
+Quality Points = Credit × Grade Point
+```
+
+The total quality points are then divided by the total credits.
+
+---
+
+## 🏗️ OOP Concepts Used
+
+This project demonstrates several important **Object-Oriented Programming concepts**.
+
+### 1. Encapsulation
+
+Private fields are used with public getters and setters.
+
+Examples:
+
+```java
+private String name;
+private String studentId;
+private double marks;
+```
+
+Validation is also performed inside setter methods.
+
+---
+
+### 2. Abstraction
+
+`Grade` is an abstract class that defines the common structure for different types of grades.
+
+```java
+abstract class Grade {
+    public abstract double getGradePoint();
+}
+```
+
+---
+
+### 3. Inheritance
+
+`LetterGrade` and `NumericGrade` inherit from the `Grade` abstract class.
+
+```text
+             Grade
+            /     \
+           /       \
+  LetterGrade   NumericGrade
+```
+
+---
+
+### 4. Polymorphism
+
+The program uses the `Grade` reference to work with different grade implementations.
+
+```java
+Grade grade;
+
+grade = new NumericGrade(marks);
+```
+
+or:
+
+```java
+grade = new LetterGrade(letter);
+```
+
+The same `getGradePoint()` method behaves differently depending on the actual object.
+
+---
+
+### 5. Method Overriding
+
+Both child classes override the abstract `getGradePoint()` method.
+
+```java
+@Override
+public double getGradePoint()
+```
+
+---
+
+### 6. Composition / Object Relationships
+
+A `Student` contains multiple `Course` objects:
+
+```java
+private List<Course> courses;
+```
+
+Each `Course` also contains a `Grade` object:
+
+```java
+private Grade grade;
+```
+
+This creates relationships between the classes and demonstrates practical OOP design.
+
+---
+
+## 🏛️ Class Structure
+
+The project consists of the following main classes:
+
+| Class            | Responsibility                                          |
+| ---------------- | ------------------------------------------------------- |
+| `Grade`          | Abstract base class for grades                          |
+| `LetterGrade`    | Handles letter-based grades                             |
+| `NumericGrade`   | Converts marks into grades and grade points             |
+| `Course`         | Stores course information and calculates quality points |
+| `Student`        | Stores student information and courses                  |
+| `CGPACalculator` | Performs CGPA calculation                               |
+| `CGPAApp`        | Creates the Java Swing GUI and handles user interaction |
+
+### Class Relationship
+
+```text
+                    Grade
+                   /     \
+                  /       \
+         LetterGrade    NumericGrade
+                             
+                    ↑
+                    |
+                  Course
+                    ↑
+                    |
+                  Student
+
+             CGPACalculator
+                    |
+                    ↓
+                  Student
+
+                 CGPAApp
+                    |
+                    ↓
+                  Student
+```
+
+---
+
+## 🖥️ Graphical User Interface
+
+The application is built using **Java Swing**.
+
+The GUI includes:
+
+* Student Name field
+* Student ID field
+* Course Name field
+* Credits field
+* Grade Type selection
+* Numeric Marks input
+* Letter Grade selection
+* Course table
+* Add Course button
+* Calculate CGPA button
+* Clear button
+* CGPA display
+
+---
 
 ## 📂 Project Structure
 
@@ -34,45 +235,91 @@ CSE-4-OOP_CGPA-Generation-System-Java/
 └── README.md
 ```
 
+Compiled `.class` files are excluded from Git using `.gitignore`.
+
+---
+
 ## ▶️ How to Run
 
-### 1. Clone the repository
+### Requirements
 
-```bash
-git clone <your-repository-url>
-```
+* Java JDK
+* VS Code / IntelliJ IDEA / Eclipse
+* Git (optional, for cloning the repository)
 
-### 2. Open the project directory
+### Compile
 
-```bash
-cd CSE-4-OOP_CGPA-Generation-System-Java
-```
-
-### 3. Compile the Java program
+Open the project folder in a terminal and run:
 
 ```bash
 javac CGPAApp.java
 ```
 
-### 4. Run the program
+### Run
 
 ```bash
 java CGPAApp
 ```
 
-## 🧮 CGPA Calculation
+The **UGV CGPA Generation System** window will open.
 
-The CGPA is calculated using the weighted average of grade points:
+---
 
-```text
-CGPA = Σ(Grade Point × Credit) / Σ(Credit)
-```
+## 📝 How to Use
+
+1. Enter the **Student Name**.
+2. Enter the **Student ID**.
+3. Enter the **Course Name**.
+4. Enter the course **Credits**.
+5. Select either:
+
+   * `Numeric Marks`, or
+   * `Letter Grade`
+6. Enter the marks or select a letter grade.
+7. Click **Add Course**.
+8. Repeat the process for other courses.
+9. Click **Calculate CGPA**.
+10. The final CGPA and student information will be displayed.
+
+---
+
+## 🛡️ Input Validation
+
+The application validates user input, including:
+
+* Empty student name
+* Empty student ID
+* Empty course name
+* Invalid credits
+* Marks outside the `0–100` range
+* Empty grade values
+* Invalid letter grades
+* Invalid numeric input
+* Attempting to calculate without adding courses
+
+Error messages are displayed using Java Swing dialog boxes.
+
+---
+
+## 🧰 Technologies Used
+
+* **Java**
+* **Java Swing**
+* **Object-Oriented Programming**
+* **ArrayList / List**
+* **Git**
+* **GitHub**
+
+---
 
 ## 🎓 Academic Information
 
+**University:** University of Global Village (UGV)
 **Course:** Object-Oriented Programming (OOP)
-**Language:** Java
-**Project:** CGPA Generation System
+**Project:** UGV CGPA Generation System
+**Programming Language:** Java
+
+---
 
 ## 👨‍💻 Author
 
@@ -80,4 +327,4 @@ CGPA = Σ(Grade Point × Credit) / Σ(Credit)
 
 ---
 
-⭐ If you find this project useful, feel free to star the repository.
+⭐ This project was created for academic learning and practicing Java Object-Oriented Programming concepts.
