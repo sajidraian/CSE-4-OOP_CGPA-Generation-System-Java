@@ -2,15 +2,17 @@
 
 A **GUI-based CGPA Generation System** developed using **Java Swing** and **Object-Oriented Programming (OOP)** concepts.
 
-This project is designed according to the **University of Global Village (UGV)** grading system and supports both **numeric marks** and **letter grades**.
+This project is designed according to the **University of Global Village (UGV)** grading system. It supports both **numeric marks** and **letter grades**, and allows students to manage their results across **Semester 1 to Semester 8**.
 
 ---
 
 ## 📌 Project Overview
 
-The **UGV CGPA Generation System** allows users to enter student information, add multiple courses, provide course credits and grades, and automatically calculate the student's CGPA.
+The **UGV CGPA Generation System** allows users to enter student information, select a semester, add multiple courses, provide course credits and grades, and automatically calculate both **semester GPA** and **overall CGPA**.
 
 The application provides a graphical user interface using **Java Swing**, making the system simple and user-friendly.
+
+Courses are organized separately by semester, allowing the user to update and manage academic results from **Semester 1 through Semester 8**.
 
 ---
 
@@ -18,12 +20,15 @@ The application provides a graphical user interface using **Java Swing**, making
 
 * 👨‍🎓 Enter student name and student ID
 * 📚 Add multiple courses
+* 🎓 Select semester from **Semester 1 to Semester 8**
 * 💳 Enter course credit hours
 * 🔢 Enter numeric marks (0–100)
 * 🔤 Select letter grades manually
 * 🔄 Automatically convert marks into UGV letter grades
 * 📊 Display courses in a table
-* 🧮 Calculate credit-weighted CGPA
+* 📈 Calculate **semester-wise GPA**
+* 🧮 Calculate **overall credit-weighted CGPA**
+* 🔄 Switch between semesters and view the selected semester GPA
 * 📋 Display total courses and total credits
 * ⚠️ Input validation and error handling
 * 🧹 Clear all entered information
@@ -50,12 +55,60 @@ The application follows the following grading scale:
 
 ---
 
-## 🧮 CGPA Calculation
+## 📚 Semester Management
 
-The system calculates CGPA using a credit-weighted average:
+The system supports **8 semesters**:
 
 ```text
-CGPA = Σ(Credit × Grade Point) / Σ(Credit)
+Semester 1
+Semester 2
+Semester 3
+Semester 4
+Semester 5
+Semester 6
+Semester 7
+Semester 8
+```
+
+Each semester has its own list of courses.
+
+For example:
+
+```text
+Semester 1
+ ├── Course 1
+ ├── Course 2
+ └── Course 3
+
+Semester 2
+ ├── Course 1
+ ├── Course 2
+ └── Course 3
+
+Semester 3
+ ├── Course 1
+ └── Course 2
+
+...
+
+Semester 8
+ ├── Course 1
+ └── Course 2
+```
+
+This allows courses to be added to the correct semester without mixing results from different semesters.
+
+---
+
+## 🧮 GPA and CGPA Calculation
+
+### Semester GPA
+
+The GPA of each semester is calculated using the credit-weighted formula:
+
+```text
+Semester GPA =
+Σ(Credit × Grade Point) / Σ(Credit)
 ```
 
 For each course:
@@ -64,7 +117,41 @@ For each course:
 Quality Points = Credit × Grade Point
 ```
 
-The total quality points are then divided by the total credits.
+For example:
+
+```text
+Course A
+Credit = 3
+Grade Point = 4.00
+
+Quality Points = 3 × 4.00
+               = 12.00
+```
+
+The quality points of all courses in the semester are added and divided by the total semester credits.
+
+---
+
+### Overall CGPA
+
+The overall CGPA is calculated using **all courses from all semesters**:
+
+```text
+Overall CGPA =
+Σ(All Course Quality Points) / Σ(All Course Credits)
+```
+
+This means the system uses a **credit-weighted CGPA**, rather than simply averaging the semester GPAs.
+
+For example:
+
+```text
+Semester 1 GPA = 3.40
+Semester 2 GPA = 3.60
+Semester 3 GPA = 3.75
+```
+
+The final CGPA is calculated from the actual course credits and grade points across all semesters.
 
 ---
 
@@ -146,19 +233,35 @@ public double getGradePoint()
 
 ### 6. Composition / Object Relationships
 
-A `Student` contains multiple `Course` objects:
+A `Student` contains multiple semesters, and each semester contains multiple `Course` objects.
 
-```java
-private List<Course> courses;
+Each `Course` also contains a `Grade` object.
+
+Conceptually:
+
+```text
+Student
+  |
+  ├── Semester 1
+  │     ├── Course
+  │     ├── Course
+  │     └── Course
+  │
+  ├── Semester 2
+  │     ├── Course
+  │     └── Course
+  │
+  ├── Semester 3
+  │     └── Course
+  │
+  ...
+  │
+  └── Semester 8
+        ├── Course
+        └── Course
 ```
 
-Each `Course` also contains a `Grade` object:
-
-```java
-private Grade grade;
-```
-
-This creates relationships between the classes and demonstrates practical OOP design.
+This demonstrates practical relationships between objects and improves the organization of semester-wise academic data.
 
 ---
 
@@ -172,8 +275,8 @@ The project consists of the following main classes:
 | `LetterGrade`    | Handles letter-based grades                             |
 | `NumericGrade`   | Converts marks into grades and grade points             |
 | `Course`         | Stores course information and calculates quality points |
-| `Student`        | Stores student information and courses                  |
-| `CGPACalculator` | Performs CGPA calculation                               |
+| `Student`        | Stores student information and semester-wise courses    |
+| `CGPACalculator` | Performs semester GPA and overall CGPA calculations     |
 | `CGPAApp`        | Creates the Java Swing GUI and handles user interaction |
 
 ### Class Relationship
@@ -189,7 +292,12 @@ The project consists of the following main classes:
                   Course
                     ↑
                     |
-                  Student
+              Student
+             /       \
+            /         \
+     Semester 1 ... Semester 8
+            |
+         Courses
 
              CGPACalculator
                     |
@@ -212,6 +320,7 @@ The GUI includes:
 
 * Student Name field
 * Student ID field
+* Semester selection
 * Course Name field
 * Credits field
 * Grade Type selection
@@ -221,7 +330,25 @@ The GUI includes:
 * Add Course button
 * Calculate CGPA button
 * Clear button
-* CGPA display
+* Semester GPA display
+* Overall CGPA display
+
+---
+
+## 📊 Semester-Wise Results
+
+The application allows the user to select a semester and see its GPA.
+
+For example:
+
+```text
+Selected Semester: 4
+
+Semester 4 GPA: 3.52
+Overall CGPA: 3.47
+```
+
+When the semester selection is changed, the displayed semester GPA is updated automatically.
 
 ---
 
@@ -235,7 +362,7 @@ CSE-4-OOP_CGPA-Generation-System-Java/
 └── README.md
 ```
 
-Compiled `.class` files are excluded from Git using `.gitignore`.
+Compiled `.class` files should be excluded from Git using `.gitignore`.
 
 ---
 
@@ -269,17 +396,19 @@ The **UGV CGPA Generation System** window will open.
 
 1. Enter the **Student Name**.
 2. Enter the **Student ID**.
-3. Enter the **Course Name**.
-4. Enter the course **Credits**.
-5. Select either:
+3. Select the required **Semester (1–8)**.
+4. Enter the **Course Name**.
+5. Enter the course **Credits**.
+6. Select either:
 
    * `Numeric Marks`, or
    * `Letter Grade`
-6. Enter the marks or select a letter grade.
-7. Click **Add Course**.
-8. Repeat the process for other courses.
-9. Click **Calculate CGPA**.
-10. The final CGPA and student information will be displayed.
+7. Enter the marks or select a letter grade.
+8. Click **Add Course**.
+9. Repeat the process for other courses in the same semester.
+10. Select another semester when you want to add courses for that semester.
+11. Click **Calculate CGPA** to calculate the selected semester GPA and overall CGPA.
+12. Use the semester selector to view the GPA of different semesters.
 
 ---
 
@@ -327,4 +456,6 @@ Error messages are displayed using Java Swing dialog boxes.
 
 ---
 
-⭐ This project was created for academic learning and practicing Java Object-Oriented Programming concepts.
+⭐ This project was created for academic learning and practicing **Java Object-Oriented Programming**, including encapsulation, abstraction, inheritance, polymorphism, composition, and GUI development.
+
+---
