@@ -302,76 +302,104 @@ class Course {
 
 class Student {
 
-    // Private fields = Encapsulation
     private String name;
     private String studentId;
 
-    private List<Course> courses;
+    // Courses are stored separately for each semester.
+    private List<List<Course>> semesters;
 
-    public Student(
-            String name,
-            String studentId) {
-
+    public Student(String name, String studentId) {
         setName(name);
         setStudentId(studentId);
-
-        courses = new ArrayList<>();
+        semesters = new ArrayList<>();
     }
 
-    // Getter
     public String getName() {
         return name;
     }
 
-    // Setter
     public void setName(String name) {
-
-        if (name == null ||
-                name.trim().isEmpty()) {
-
-            throw new IllegalArgumentException(
-                    "Student name cannot be empty."
-            );
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Student name cannot be empty.");
         }
-
         this.name = name.trim();
     }
 
-    // Getter
     public String getStudentId() {
         return studentId;
     }
 
-    // Setter
     public void setStudentId(String studentId) {
-
-        if (studentId == null ||
-                studentId.trim().isEmpty()) {
-
-            throw new IllegalArgumentException(
-                    "Student ID cannot be empty."
-            );
+        if (studentId == null || studentId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Student ID cannot be empty.");
         }
-
         this.studentId = studentId.trim();
     }
 
-    // Getter
-    public List<Course> getCourses() {
-        return courses;
-    }
-
-    // Add course
-    public void addCourse(Course course) {
-
-        if (course == null) {
-
-            throw new IllegalArgumentException(
-                    "Course cannot be null."
-            );
+    // Add a semester if it does not already exist.
+    private void ensureSemester(int semester) {
+        if (semester < 1) {
+            throw new IllegalArgumentException("Semester must be 1 or greater.");
         }
 
-        courses.add(course);
+        while (semesters.size() < semester) {
+            semesters.add(new ArrayList<>());
+        }
+    }
+
+    public void addCourse(int semester, Course course) {
+        if (course == null) {
+            throw new IllegalArgumentException("Course cannot be null.");
+        }
+
+        ensureSemester(semester);
+        semesters.get(semester - 1).add(course);
+    }
+
+    public List<Course> getCourses(int semester) {
+        if (semester < 1 || semester > semesters.size()) {
+            return new ArrayList<>();
+        }
+        return semesters.get(semester - 1);
+    }
+
+    public int getSemesterCount() {
+        return semesters.size();
+    }
+
+    public List<List<Course>> getSemesters() {
+        return semesters;
+    }
+
+    // Semester GPA:
+    // Sum(Credit × Grade Point) / Sum(Credit)
+    public double calculateSemesterGPA(int semester) {
+        List<Course> courses = getCourses(semester);
+
+        double totalQualityPoints = 0.0;
+        double totalCredits = 0.0;
+
+        for (Course course : courses) {
+            totalQualityPoints += course.getQualityPoints();
+            totalCredits += course.getCredits();
+        }
+
+        return totalCredits == 0 ? 0.0 : totalQualityPoints / totalCredits;
+    }
+
+    // Overall CGPA from all semesters.
+    public double calculateCGPA() {
+        double totalQualityPoints = 0.0;
+        double totalCredits = 0.0;
+
+        for (List<Course> courses : semesters) {
+            for (Course course : courses) {
+                totalQualityPoints += course.getQualityPoints();
+                totalCredits += course.getCredits();
+            }
+        }
+
+        return totalCredits == 0 ? 0.0 : totalQualityPoints / totalCredits;
     }
 }
 
@@ -382,43 +410,25 @@ class Student {
 
 class CGPACalculator {
 
-    // Prevent object creation
     private CGPACalculator() {
     }
 
-    // Weighted CGPA calculation
-    public static double calculateCGPA(Student student) {
-
+    public static double calculateSemesterGPA(Student student, int semester) {
         if (student == null) {
-
-            throw new IllegalArgumentException(
-                    "Student cannot be null."
-            );
+            throw new IllegalArgumentException("Student cannot be null.");
         }
 
-        double totalQualityPoints = 0.0;
-        double totalCredits = 0.0;
+        return student.calculateSemesterGPA(semester);
+    }
 
-        // Calculate:
-        // CGPA = Sum(Credit × Grade Point) / Sum(Credit)
-
-        for (Course course : student.getCourses()) {
-
-            totalQualityPoints +=
-                    course.getQualityPoints();
-
-            totalCredits +=
-                    course.getCredits();
+    public static double calculateCGPA(Student student) {
+        if (student == null) {
+            throw new IllegalArgumentException("Student cannot be null.");
         }
 
-        if (totalCredits == 0) {
-            return 0.0;
-        }
-
-        return totalQualityPoints / totalCredits;
+        return student.calculateCGPA();
     }
 }
-
 
 // ============================================================
 // MAIN SWING APPLICATION
@@ -436,6 +446,10 @@ public class CGPAApp extends JFrame {
     private JTextField courseField;
     private JTextField creditsField;
     private JTextField marksField;
+
+    // Semester
+    private JComboBox<Integer> semesterCombo;
+    private JLabel semesterGPALabel;
 
     // Grade type
     private JComboBox<String> gradeTypeCombo;
@@ -498,7 +512,7 @@ public class CGPAApp extends JFrame {
 
         JLabel titleLabel =
                 new JLabel(
-                        "UGV CGPA GENERATION SYSTEM",
+                        "UGV CGPA GENERATION SYSTEM - SEMESTER WISE",
                         SwingConstants.CENTER
                 );
 
@@ -524,7 +538,7 @@ public class CGPAApp extends JFrame {
         JPanel formPanel =
                 new JPanel(
                         new GridLayout(
-                                7,
+                                8,
                                 2,
                                 10,
                                 10
@@ -560,6 +574,16 @@ public class CGPAApp extends JFrame {
                 new JTextField();
 
         formPanel.add(idField);
+
+        // Semester
+        formPanel.add(new JLabel("Semester:"));
+
+        semesterCombo = new JComboBox<>();
+        // UGV program has Semester 1 to Semester 8
+        for (int i = 1; i <= 8; i++) {
+            semesterCombo.addItem(i);
+        }
+        formPanel.add(semesterCombo);
 
 
         // Course Name
@@ -654,6 +678,7 @@ public class CGPAApp extends JFrame {
 
         String[] columns = {
 
+                "Semester",
                 "Course",
                 "Credits",
                 "Grade",
@@ -790,8 +815,47 @@ public class CGPAApp extends JFrame {
         );
 
 
+        // ----------------------------------------------------
+        // GPA / CGPA LABELS
+        // ----------------------------------------------------
+
+        semesterGPALabel =
+                new JLabel(
+                        "Semester GPA: 0.00",
+                        SwingConstants.CENTER
+                );
+
+        semesterGPALabel.setFont(
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        18
+                )
+        );
+
+        cgpaLabel =
+                new JLabel(
+                        "Overall CGPA: 0.00",
+                        SwingConstants.CENTER
+                );
+
+        cgpaLabel.setFont(
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        22
+                )
+        );
+
+        JPanel resultPanel = new JPanel(
+                new GridLayout(2, 1)
+        );
+
+        resultPanel.add(semesterGPALabel);
+        resultPanel.add(cgpaLabel);
+
         bottomPanel.add(
-                cgpaLabel,
+                resultPanel,
                 BorderLayout.SOUTH
         );
 
@@ -832,6 +896,8 @@ public class CGPAApp extends JFrame {
         // ----------------------------------------------------
         // GRADE TYPE CHANGE
         // ----------------------------------------------------
+
+        semesterCombo.addActionListener(e -> updateSemesterGPA());
 
         gradeTypeCombo.addActionListener(e -> {
 
@@ -911,6 +977,13 @@ public class CGPAApp extends JFrame {
                         );
             }
 
+
+            // ------------------------------------------------
+            // SEMESTER
+            // ------------------------------------------------
+
+            int semester =
+                    (Integer) semesterCombo.getSelectedItem();
 
             // ------------------------------------------------
             // COURSE NAME
@@ -1051,6 +1124,7 @@ public class CGPAApp extends JFrame {
             // ------------------------------------------------
 
             student.addCourse(
+                    semester,
                     course
             );
 
@@ -1061,6 +1135,8 @@ public class CGPAApp extends JFrame {
 
             tableModel.addRow(
                     new Object[]{
+
+                            semester,
 
                             course.getCourseName(),
 
@@ -1093,6 +1169,8 @@ public class CGPAApp extends JFrame {
             creditsField.setText("");
 
             marksField.setText("");
+
+            updateSemesterGPA();
 
 
             // ------------------------------------------------
@@ -1152,56 +1230,55 @@ public class CGPAApp extends JFrame {
 
     private void calculateCGPA() {
 
-        if (student == null ||
-                student.getCourses().isEmpty()) {
-
+        if (student == null || student.getSemesterCount() == 0) {
             JOptionPane.showMessageDialog(
                     this,
-
                     "Please add at least one course.",
-
                     "No Courses",
-
                     JOptionPane.WARNING_MESSAGE
             );
-
             return;
         }
 
-
-        // Calculate weighted CGPA
-
         double cgpa =
-                CGPACalculator.calculateCGPA(
-                        student
-                );
-
-
-        // Display CGPA
+                CGPACalculator.calculateCGPA(student);
 
         cgpaLabel.setText(
                 String.format(
-                        "CGPA: %.2f",
+                        "Overall CGPA: %.2f",
                         cgpa
                 )
         );
 
+        int selectedSemester =
+                (Integer) semesterCombo.getSelectedItem();
 
-        // Calculate total credits
+        double semesterGPA =
+                CGPACalculator.calculateSemesterGPA(
+                        student,
+                        selectedSemester
+                );
 
-        double totalCredits = 0;
+        semesterGPALabel.setText(
+                String.format(
+                        "Semester %d GPA: %.2f",
+                        selectedSemester,
+                        semesterGPA
+                )
+        );
 
-        for (Course course :
-                student.getCourses()) {
+        double totalCredits = 0.0;
+        int totalCourses = 0;
 
-            totalCredits +=
-                    course.getCredits();
+        for (List<Course> semesterCourses :
+                student.getSemesters()) {
+
+            totalCourses += semesterCourses.size();
+
+            for (Course course : semesterCourses) {
+                totalCredits += course.getCredits();
+            }
         }
-
-
-        // ----------------------------------------------------
-        // RESULT MESSAGE
-        // ----------------------------------------------------
 
         JOptionPane.showMessageDialog(
                 this,
@@ -1213,7 +1290,7 @@ public class CGPAApp extends JFrame {
                         + student.getStudentId()
 
                         + "\nTotal Courses: "
-                        + student.getCourses().size()
+                        + totalCourses
 
                         + "\nTotal Credits: "
                         + String.format(
@@ -1221,7 +1298,15 @@ public class CGPAApp extends JFrame {
                                 totalCredits
                         )
 
-                        + "\n\nUGV CGPA: "
+                        + "\nSemester "
+                        + selectedSemester
+                        + " GPA: "
+                        + String.format(
+                                "%.2f",
+                                semesterGPA
+                        )
+
+                        + "\n\nOverall CGPA: "
                         + String.format(
                                 "%.2f",
                                 cgpa
@@ -1233,6 +1318,35 @@ public class CGPAApp extends JFrame {
         );
     }
 
+
+    // ========================================================
+    // UPDATE SELECTED SEMESTER GPA
+    // ========================================================
+
+    private void updateSemesterGPA() {
+
+        if (student == null) {
+            semesterGPALabel.setText("Semester GPA: 0.00");
+            return;
+        }
+
+        int semester =
+                (Integer) semesterCombo.getSelectedItem();
+
+        double gpa =
+                CGPACalculator.calculateSemesterGPA(
+                        student,
+                        semester
+                );
+
+        semesterGPALabel.setText(
+                String.format(
+                        "Semester %d GPA: %.2f",
+                        semester,
+                        gpa
+                )
+        );
+    }
 
     // ========================================================
     // CLEAR EVERYTHING
@@ -1254,10 +1368,15 @@ public class CGPAApp extends JFrame {
         tableModel.setRowCount(0);
 
 
-        cgpaLabel.setText(
-                "CGPA: 0.00"
+        semesterGPALabel.setText(
+                "Semester GPA: 0.00"
         );
 
+        cgpaLabel.setText(
+                "Overall CGPA: 0.00"
+        );
+
+        semesterCombo.setSelectedIndex(0);
 
         student = null;
     }
